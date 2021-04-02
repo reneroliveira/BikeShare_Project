@@ -52,20 +52,20 @@ for (i in 2:length(files)){
   if (i<k){
     data_i <- data_i %>% mutate(date_time=ymd_h(substr(Start.date,1,13))) %>% 
       filter(Member.type %in% c("Member","Casual")) %>% 
-      mutate(dummy = 1) %>% 
+      mutate(Member.Type = tolower(Member.Type),dummy = 1) %>% 
       spread(Member.type, dummy, fill = 0)
   }
   else{ #After k, the columns changes
     data_i <- data_i %>% mutate(date_time=ymd_h(substr(started_at,1,13))) %>% 
       filter(member_casual %in% c("member","casual")) %>% 
-      mutate(member_casual = str_to_title(member_casual),dummy = 1) %>% 
+      mutate(dummy = 1) %>% 
       spread(member_casual, dummy, fill = 0)
   }
    data_i <- data_i  %>% 
-    select(date_time,Casual,Member) %>% 
+    select(date_time,casual,member) %>% 
     group_by(date_time) %>% 
-    summarise(Casual=sum(Casual),
-              Member=sum(Member))
+    summarise(Casual=sum(casual),
+              Member=sum(member))
   bike_data <- rbind(bike_data,data_i)
   print(paste("Loop",i,"/",length(files),"completed sucessfully"))
   rm(data_i)
