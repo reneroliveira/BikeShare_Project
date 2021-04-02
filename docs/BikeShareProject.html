@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<meta name="author" content="Rener de Souza Oliveira" />
+
+
+<title>BikeShare Project</title>
+
+
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css" data-origin="pandoc">
+a.sourceLine { display: inline-block; line-height: 1.25; }
+a.sourceLine { pointer-events: none; color: inherit; text-decoration: inherit; }
+a.sourceLine:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode { white-space: pre; position: relative; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+code.sourceCode { white-space: pre-wrap; }
+a.sourceLine { text-indent: -1em; padding-left: 1em; }
+}
+pre.numberSource a.sourceLine
+  { position: relative; left: -4em; }
+pre.numberSource a.sourceLine::before
+  { content: attr(data-line-number);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; pointer-events: all; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {  }
+@media screen {
+a.sourceLine::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+
+/* A workaround for https://github.com/jgm/pandoc/issues/4278 */
+a.sourceLine {
+  pointer-events: auto;
+}
+
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    for (var j = 0; j < rules.length; j++) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") continue;
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') continue;
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+<link rel="stylesheet" href="BikeShareProject_files/style.css" type="text/css" />
+
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<header>
+<div class="inner">
+<h1 class="title toc-ignore">BikeShare Project</h1>
+<h3 class="author">Rener de Souza Oliveira</h3>
+<h3 class="date">02 abril 2021</h3>
+</div>
+</header>
+
+
+<div id="TOC" class="toc">
+<div class="inner">
+<ul>
+<li><a href="#bases-de-dados"><span class="toc-section-number">1</span> Bases de Dados</a><ul>
+<li><a href="#apresentação-e-motivações"><span class="toc-section-number">1.1</span> Apresentação e Motivações</a></li>
+</ul></li>
+<li><a href="#extração-limpeza-e-agregação-dos-dados"><span class="toc-section-number">2</span> Extração, Limpeza e Agregação dos dados</a><ul>
+<li><a href="#dados-das-corridas-de-bicicleta"><span class="toc-section-number">2.1</span> Dados das corridas de bicicleta</a></li>
+<li><a href="#dados-de-temperatura-e-agregação"><span class="toc-section-number">2.2</span> Dados de Temperatura e Agregação</a></li>
+</ul></li>
+<li><a href="#análise-exploratória"><span class="toc-section-number">3</span> Análise Exploratória</a><ul>
+<li><a href="#visualizações-iniciais"><span class="toc-section-number">3.1</span> Visualizações iniciais</a></li>
+<li><a href="#analisando-assimetrias-e-dispersões"><span class="toc-section-number">3.2</span> Analisando assimetrias e dispersões</a></li>
+<li><a href="#influência-do-clima"><span class="toc-section-number">3.3</span> Influência do clima</a></li>
+<li><a href="#impactos-da-pandemia"><span class="toc-section-number">3.4</span> Impactos da Pandemia</a></li>
+</ul></li>
+<li><a href="#comentários-finais-e-conclusões"><span class="toc-section-number">4</span> Comentários finais e Conclusões</a></li>
+<li><a href="#referências">Referências</a></li>
+</ul>
+</div>
+</div>
+
+<div id="content-wrapper">
+  <div class="inner clearfix">
+    <section id="main-content">
+<div id="bases-de-dados" class="section level1">
+<h1><span class="header-section-number">1</span> Bases de Dados</h1>
+<div id="apresentação-e-motivações" class="section level2">
+<h2><span class="header-section-number">1.1</span> Apresentação e Motivações</h2>
+<p>A base de dados escolhida foi a da <a href="https://www.capitalbikeshare.com/system-data">Capital BikeShare</a> uma empresa de bicicletas compartilhadas que oferece seu serviço na cidade de Washington D.C e sua vizinhança. A empresa disponibiliza em seu site de forma aberta, todas as corridas realizadas por seus clientes, registrando na base de dados original, dados como hora exata da retirada da bicicleta, local da estação, tipo de cliente, etc, porém algumas simplificações foram feitas para agregar os dados brutos como veremos a seguir.</p>
+<p><img src="BSS.png" /></p>
+<p>Uma segunda base de dados, auxiliar a primeira, é uma tabela com temperaturas registradas na cidade de Washington D.C, cuja fonte é <a href="noaa.gov">National Oceanic and Atmospheric Administration</a> que disponibiliza esses dados atravpes da biblioteca <a href="https://cran.r-project.org/web/packages/rnoaa/index.html">rnoaa</a>.</p>
+<p>As motivações para tais escolhas foram duas: A primeira é que o autor que vos escreve é um amante de bicicletas e era um cliente assíduo e fiel da <a href="https://bikeitau.com.br/">Bike Itaú</a>, um projeto similar de bicicletas compartilhadas que funciona no Rio de Janeiro e em outras cidades. O uso de tais bicicletas era quase diário, tanto pra ir e voltar da faculdade nos dias úteis, quanto pra se exercitar no Aterro do Flamengo aos finais de semana, ou dar uma volta descompromissada na orla da Praia de Botafogo.</p>
+<p>O segundo motivo, é um trabalho realizado na disciplina de Fundamentos de Data Science do 2º trimestre do mestrado em 2020. Uma das atividades <a href="https://github.com/reneroliveira/Data_Science_Fundamentals/blob/master/Homeworks/cs109a_hw3/fds_hw3_RENER_OLIVEIRA.pdf">disponível aqui</a> propunha uma análise exploratória e ajustes de regressão, nos dados da Capital BikeShare. Porém os dados foram dados de forma limpa para os alunos, e só comtemplava os anos 2011 e 2012. A escolha do “mesmo” dataset seria fazer uma releitura da parte exploratória deste outro trabalho, porém usando dados mais atuais, e respondendo perguntas diferentes.</p>
+<p>Ao buscar o dado diretamente na fonte (site da empresa), algumas variáveis que estavam disponíveis nos dados limpos do outro trabalho, não estavam lá, com isso veio a necessidade de buscar o dado de temperatura, por exemplo, em uma outra fonte externa e oficial, no caso a NOAA.</p>
+<p>Formula-se então algumas perguntas interessantes que podem ser respondidas com a junção desses dois datasets:</p>
+<ul>
+<li>Quais são os horários de pico do aluguéis?</li>
+<li>Como feriados/fins de semana afetam o número de corridas?</li>
+<li>Como as condições climáticas afetam as corridas?</li>
+<li>Como pandemia afetou a empresa em 2020?</li>
+</ul>
+</div>
+</div>
+<div id="extração-limpeza-e-agregação-dos-dados" class="section level1">
+<h1><span class="header-section-number">2</span> Extração, Limpeza e Agregação dos dados</h1>
+<div id="dados-das-corridas-de-bicicleta" class="section level2">
+<h2><span class="header-section-number">2.1</span> Dados das corridas de bicicleta</h2>
+<p>A Capital Bikeshare disponibiliza um arquivo zip ara cada mês em seu site, cada zip contém um csv dos registros de corridas mensais. Abaixo podemos ter uma ideia de como é o dado bruto, tomando um exemplo do mês de Janeiro de 2018.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb1-1" data-line-number="1"><span class="co">#Carregamento de Bibliotecas</span></a>
+<a class="sourceLine" id="cb1-2" data-line-number="2"><span class="kw">library</span>(lubridate)</a>
+<a class="sourceLine" id="cb1-3" data-line-number="3"><span class="kw">library</span>(stringr)</a>
+<a class="sourceLine" id="cb1-4" data-line-number="4"><span class="kw">library</span>(dplyr)</a>
+<a class="sourceLine" id="cb1-5" data-line-number="5"><span class="kw">library</span>(tidyr)</a>
+<a class="sourceLine" id="cb1-6" data-line-number="6"><span class="kw">library</span>(ggplot2)</a>
+<a class="sourceLine" id="cb1-7" data-line-number="7"><span class="kw">library</span>(gridExtra)</a>
+<a class="sourceLine" id="cb1-8" data-line-number="8"><span class="kw">library</span>(forcats)</a>
+<a class="sourceLine" id="cb1-9" data-line-number="9"><span class="kw">library</span>(timeDate)</a>
+<a class="sourceLine" id="cb1-10" data-line-number="10"><span class="co">#Carregamento do dado bruto</span></a>
+<a class="sourceLine" id="cb1-11" data-line-number="11">bike_path &lt;-<span class="st"> &quot;../data/bike/&quot;</span></a>
+<a class="sourceLine" id="cb1-12" data-line-number="12">example &lt;-<span class="st"> </span><span class="kw">read.csv</span>(<span class="kw">paste0</span>(bike_path,<span class="st">&quot;201801_capitalbikeshare_tripdata.csv&quot;</span>),<span class="dt">header=</span><span class="ot">TRUE</span>,<span class="dt">stringsAsFactors=</span><span class="ot">FALSE</span>)</a>
+<a class="sourceLine" id="cb1-13" data-line-number="13"><span class="kw">glimpse</span>(example)</a></code></pre></div>
+<pre><code>## Rows: 168,590
+## Columns: 9
+## $ Duration             &lt;int&gt; 552, 1282, 1265, 578, 372, 369, 486, 1615, 1598, …
+## $ Start.date           &lt;chr&gt; &quot;2018-01-01 00:05:06&quot;, &quot;2018-01-01 00:14:30&quot;, &quot;20…
+## $ End.date             &lt;chr&gt; &quot;2018-01-01 00:14:18&quot;, &quot;2018-01-01 00:35:53&quot;, &quot;20…
+## $ Start.station.number &lt;int&gt; 31104, 31321, 31321, 31406, 31618, 31618, 31042, …
+## $ Start.station        &lt;chr&gt; &quot;Adams Mill &amp; Columbia Rd NW&quot;, &quot;15th St &amp; Constit…
+## $ End.station.number   &lt;int&gt; 31400, 31321, 31321, 31103, 31619, 31619, 31098, …
+## $ End.station          &lt;chr&gt; &quot;Georgia &amp; New Hampshire Ave NW&quot;, &quot;15th St &amp; Cons…
+## $ Bike.number          &lt;chr&gt; &quot;W00886&quot;, &quot;W01435&quot;, &quot;W21242&quot;, &quot;W21322&quot;, &quot;W00119&quot;,…
+## $ Member.type          &lt;chr&gt; &quot;Member&quot;, &quot;Casual&quot;, &quot;Casual&quot;, &quot;Casual&quot;, &quot;Member&quot;,…</code></pre>
+<p>Das informações acima, foi gerado um dadaset reduzido, que contem apenas 3 colunas: <code>date_time</code>, <code>Member</code>, e <code>Casual</code> que representam respectivamente a data/horário de retirada da bicicleta do seu ponto (em precisão de hora), a quantidade de Membros que retiraram bicicletas naquele horário, e a quantidade de clientes casuais. Tal classificação de clientes se refere aos diferentes plano oferecidos ela empresa, um membro é um usuário registrado com algum assinatura mensal ou anual do serviço, enquanto o usuário casual, como o nome sugere, contrata o serviço para uma pedalada única (“Single Trip”) ou por um período de poucos dias.</p>
+<p>O processo de transformação citado acima foi separado em um script .R em separado, disponível no GitHub no arquivo <a href="https://github.com/reneroliveira/BikeShare_Project/blob/main/BikeShare%20Project/get_bike_data.R">get_bike_data.R</a>. O motivo para tal separação, foi que neste script também está automatizado o processo de download dos dados diretamente da fonte e tal processo junto com a pipeline de transformação é computacionalmente custoso e demora a ser executado. Mas abaixo segue um esquema de como funciona o script:</p>
+<ol style="list-style-type: decimal">
+<li>Definição do período a ser baixado (2018-2020);</li>
+<li>Loop para baixar os arquivos .zip da fonte e descompactar os .csv’s;</li>
+<li>Leitura do csv bruto inicial (jan/2018);</li>
+<li>Transformação do csv inicial para o formato agregado citado acima (usando <code>dplyr</code> e <code>tidyr</code>);</li>
+<li>Loop para percorrer os outros arquivos, transformá-los e juntá-los com o inicial (usando <code>rbind</code>)</li>
+</ol>
+<p>Nuances como dados faltantes ou padrão de nomes de colunas diferentes foram tratadas devidamente e podem ser analisadas com mais detalhes no script. Ao final final o dado limpo é salvo em arquivos .rda e .csv, veja abaixo o cabeçalho do resultado:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb3-1" data-line-number="1"><span class="kw">load</span>(<span class="kw">paste0</span>(bike_path,<span class="st">&quot;bike_data.rda&quot;</span>))</a>
+<a class="sourceLine" id="cb3-2" data-line-number="2"><span class="kw">head</span>(bike_data)</a></code></pre></div>
+<div class="kable-table">
+<table>
+<thead>
+<tr class="header">
+<th align="left">date_time</th>
+<th align="right">casual</th>
+<th align="right">member</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">2018-01-01 00:00:00</td>
+<td align="right">6</td>
+<td align="right">28</td>
+</tr>
+<tr class="even">
+<td align="left">2018-01-01 01:00:00</td>
+<td align="right">11</td>
+<td align="right">38</td>
+</tr>
+<tr class="odd">
+<td align="left">2018-01-01 02:00:00</td>
+<td align="right">7</td>
+<td align="right">30</td>
+</tr>
+<tr class="even">
+<td align="left">2018-01-01 03:00:00</td>
+<td align="right">1</td>
+<td align="right">8</td>
+</tr>
+<tr class="odd">
+<td align="left">2018-01-01 04:00:00</td>
+<td align="right">2</td>
+<td align="right">10</td>
+</tr>
+<tr class="even">
+<td align="left">2018-01-01 05:00:00</td>
+<td align="right">3</td>
+<td align="right">5</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>Perceba que a coluna <code>date_time</code> está organizada em intervalos de uma hora, as outras colunas estão representando quantos usuários fizeram retiradas entre a hora marcada na linha correspondente e o segundo imediatamente anterior à hora seguinte. Temos então um dado de frequência de uso por hora, durante 3 anos (2018,2019,2020).</p>
+<p>A partir da coluna <code>date_time</code> dado podemos gerar novas colunas que serão úteis em análise futuras, como hora,dia da semana, variável indicadora de feriado, variável indicadora de estação do ano. Será adicionada também uma coluna com o total de corridas, somando membros e casuais.</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb4-1" data-line-number="1"><span class="kw">rm</span>(example)</a>
+<a class="sourceLine" id="cb4-2" data-line-number="2"><span class="co"># Função que transforma data lubridate  em estação do ano:</span></a>
+<a class="sourceLine" id="cb4-3" data-line-number="3">getSeason &lt;-<span class="st"> </span><span class="cf">function</span>(date) {</a>
+<a class="sourceLine" id="cb4-4" data-line-number="4">    year &lt;-<span class="st"> </span><span class="kw">year</span>(date)</a>
+<a class="sourceLine" id="cb4-5" data-line-number="5">    winter &lt;-<span class="st"> </span><span class="kw">ymd</span>(<span class="kw">paste0</span>(year,<span class="st">&quot;-12-21&quot;</span>))</a>
+<a class="sourceLine" id="cb4-6" data-line-number="6">    spring &lt;-<span class="st"> </span><span class="kw">ymd</span>(<span class="kw">paste0</span>(year,<span class="st">&quot;-03-20&quot;</span>))</a>
+<a class="sourceLine" id="cb4-7" data-line-number="7">    summer &lt;-<span class="st"> </span><span class="kw">ymd</span>(<span class="kw">paste0</span>(year,<span class="st">&quot;-06-20&quot;</span>))</a>
+<a class="sourceLine" id="cb4-8" data-line-number="8">    fall &lt;-<span class="st"> </span><span class="kw">ymd</span>(<span class="kw">paste0</span>(year,<span class="st">&quot;-09-22&quot;</span>))</a>
+<a class="sourceLine" id="cb4-9" data-line-number="9"></a>
+<a class="sourceLine" id="cb4-10" data-line-number="10">    <span class="kw">ifelse</span> (date <span class="op">&gt;=</span><span class="st"> </span>winter <span class="op">|</span><span class="st"> </span>date <span class="op">&lt;</span><span class="st"> </span>spring, <span class="st">&quot;Winter&quot;</span>,</a>
+<a class="sourceLine" id="cb4-11" data-line-number="11">      <span class="kw">ifelse</span> (date <span class="op">&gt;=</span><span class="st"> </span>spring <span class="op">&amp;</span><span class="st"> </span>date <span class="op">&lt;</span><span class="st"> </span>summer, <span class="st">&quot;Spring&quot;</span>,</a>
+<a class="sourceLine" id="cb4-12" data-line-number="12">        <span class="kw">ifelse</span> (date <span class="op">&gt;=</span><span class="st"> </span>summer <span class="op">&amp;</span><span class="st"> </span>date <span class="op">&lt;</span><span class="st"> </span>fall, <span class="st">&quot;Summer&quot;</span>, <span class="st">&quot;Fall&quot;</span>)))</a>
+<a class="sourceLine" id="cb4-13" data-line-number="13">}</a>
+<a class="sourceLine" id="cb4-14" data-line-number="14"></a>
+<a class="sourceLine" id="cb4-15" data-line-number="15">bike_data &lt;-<span class="st"> </span>bike_data <span class="op">%&gt;%</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb4-16" data-line-number="16"><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">hour =</span> <span class="kw">hour</span>(date_time),</a>
+<a class="sourceLine" id="cb4-17" data-line-number="17">         <span class="dt">weekday =</span> <span class="kw">weekdays</span>(date_time),</a>
+<a class="sourceLine" id="cb4-18" data-line-number="18">         <span class="dt">season =</span> <span class="kw">getSeason</span>(date_time),</a>
+<a class="sourceLine" id="cb4-19" data-line-number="19">         <span class="dt">holiday =</span> <span class="kw">isHoliday</span>(<span class="kw">timeDate</span>(date_time),<span class="dt">holidays=</span><span class="kw">holidayNYSE</span>(<span class="dv">2018</span><span class="op">:</span><span class="dv">2020</span>)),</a>
+<a class="sourceLine" id="cb4-20" data-line-number="20">         <span class="dt">total =</span> casual <span class="op">+</span><span class="st"> </span>member)</a>
+<a class="sourceLine" id="cb4-21" data-line-number="21"><span class="kw">head</span>(bike_data)</a></code></pre></div>
+<div class="kable-table">
+<table>
+<thead>
+<tr class="header">
+<th align="left">date_time</th>
+<th align="right">casual</th>
+<th align="right">member</th>
+<th align="right">hour</th>
+<th align="left">weekday</th>
+<th align="left">season</th>
+<th align="left">holiday</th>
+<th align="right">total</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">2018-01-01 00:00:00</td>
+<td align="right">6</td>
+<td align="right">28</td>
+<td align="right">0</td>
+<td align="left">segunda</td>
+<td align="left">Winter</td>
+<td align="left">TRUE</td>
+<td align="right">34</td>
+</tr>
+<tr class="even">
+<td align="left">2018-01-01 01:00:00</td>
+<td align="right">11</td>
+<td align="right">38</td>
+<td align="right">1</td>
+<td align="left">segunda</td>
+<td align="left">Winter</td>
+<td align="left">TRUE</td>
+<td align="right">49</td>
+</tr>
+<tr class="odd">
+<td align="left">2018-01-01 02:00:00</td>
+<td align="right">7</td>
+<td align="right">30</td>
+<td align="right">2</td>
+<td align="left">segunda</td>
+<td align="left">Winter</td>
+<td align="left">TRUE</td>
+<td align="right">37</td>
+</tr>
+<tr class="even">
+<td align="left">2018-01-01 03:00:00</td>
+<td align="right">1</td>
+<td align="right">8</td>
+<td align="right">3</td>
+<td align="left">segunda</td>
+<td align="left">Winter</td>
+<td align="left">TRUE</td>
+<td align="right">9</td>
+</tr>
+<tr class="odd">
+<td align="left">2018-01-01 04:00:00</td>
+<td align="right">2</td>
+<td align="right">10</td>
+<td align="right">4</td>
+<td align="left">segunda</td>
+<td align="left">Winter</td>
+<td align="left">TRUE</td>
+<td align="right">12</td>
+</tr>
+<tr class="even">
+<td align="left">2018-01-01 05:00:00</td>
+<td align="right">3</td>
+<td align="right">5</td>
+<td align="right">5</td>
+<td align="left">segunda</td>
+<td align="left">Winter</td>
+<td align="left">TRUE</td>
+<td align="right">8</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div id="dados-de-temperatura-e-agregação" class="section level2">
+<h2><span class="header-section-number">2.2</span> Dados de Temperatura e Agregação</h2>
+<p>Para complementar os dados acima, foram coletadas informações de temperatura da cidade de Washington D.C, através do script <a href="https://github.com/reneroliveira/BikeShare_Project/blob/main/BikeShare%20Project/get_climate_data.R">get_climate_data.R</a> disponível no GitHub. A fonte como citado anteriormente é <a href="noaa.gov">National Oceanic and Atmospheric Administration</a> que disponibiliza esse e vários outros dados através da biblioteca <code>rnoaa</code>. O dado bruto vem numa precisão de minutos, mas no script, além do download, é feito a agregação por hora do dia, e a medida de média dos registros disponíveis para cada hora é extraída. Segue abaixo o cabeçalho dos dados concolidados:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb5-1" data-line-number="1"><span class="kw">load</span>(<span class="kw">paste0</span>(bike_path,<span class="st">&quot;../hourly_temp.rda&quot;</span>))</a>
+<a class="sourceLine" id="cb5-2" data-line-number="2"><span class="kw">head</span>(hourly_temp)</a></code></pre></div>
+<div class="kable-table">
+<table>
+<thead>
+<tr class="header">
+<th align="left">date_time</th>
+<th align="right">temperature</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">2018-01-01 00:00:00</td>
+<td align="right">-7.2</td>
+</tr>
+<tr class="even">
+<td align="left">2018-01-01 01:00:00</td>
+<td align="right">-7.8</td>
+</tr>
+<tr class="odd">
+<td align="left">2018-01-01 02:00:00</td>
+<td align="right">-8.3</td>
+</tr>
+<tr class="even">
+<td align="left">2018-01-01 03:00:00</td>
+<td align="right">-8.3</td>
+</tr>
+<tr class="odd">
+<td align="left">2018-01-01 04:00:00</td>
+<td align="right">-8.3</td>
+</tr>
+<tr class="even">
+<td align="left">2018-01-01 05:00:00</td>
+<td align="right">-8.9</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>Observa-se que estava bem frio no ano novo de 2018. Comentários à parte, agora é possível unir as duas bases usando a coluna <code>date_time</code> como chave.</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb6-1" data-line-number="1">bike_data &lt;-<span class="st"> </span><span class="kw">left_join</span>(bike_data,hourly_temp,<span class="dt">by=</span><span class="st">&quot;date_time&quot;</span>)</a></code></pre></div>
+<p>Verificando dados <code>NA</code>:</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb7-1" data-line-number="1"><span class="kw">sapply</span>(<span class="kw">names</span>(bike_data),<span class="cf">function</span>(col){<span class="kw">return</span> (<span class="kw">sum</span>(<span class="kw">is.na</span>(bike_data[,col])))})</a></code></pre></div>
+<pre><code>##   date_time      casual      member        hour     weekday      season 
+##           0           0           0           0           0           0 
+##     holiday       total temperature 
+##           0           0           1</code></pre>
+<p>Removendo dados <code>NA</code>:</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb9-1" data-line-number="1">bike_data &lt;-<span class="st"> </span><span class="kw">na.omit</span>(bike_data)</a></code></pre></div>
+<p>Por fim, transformaremos strings em dados categóricos do tipo <code>Factor</code>, estamos considerando a hora como dado categórico, isso será esclarecido na próxima seção.</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb10-1" data-line-number="1">bike_data &lt;-<span class="st"> </span>bike_data <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb10-2" data-line-number="2"><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">hour=</span><span class="kw">factor</span>(hour,<span class="dv">0</span><span class="op">:</span><span class="dv">23</span>),</a>
+<a class="sourceLine" id="cb10-3" data-line-number="3">         <span class="dt">weekday =</span> <span class="kw">factor</span>(weekday,<span class="kw">c</span>(<span class="st">&quot;Sunday&quot;</span>,<span class="st">&quot;Monday&quot;</span>,<span class="st">&quot;Tuesday&quot;</span>,<span class="st">&quot;Wednesday&quot;</span>,<span class="st">&quot;Thursday&quot;</span>,<span class="st">&quot;Friday&quot;</span>,<span class="st">&quot;Saturday&quot;</span>)),</a>
+<a class="sourceLine" id="cb10-4" data-line-number="4">         <span class="dt">season =</span> <span class="kw">factor</span>(season,<span class="kw">c</span>(<span class="st">&quot;Winter&quot;</span>, <span class="st">&quot;Spring&quot;</span>, <span class="st">&quot;Summer&quot;</span>, <span class="st">&quot;Fall&quot;</span>)),</a>
+<a class="sourceLine" id="cb10-5" data-line-number="5">         <span class="dt">holiday =</span> <span class="kw">factor</span>(holiday,<span class="kw">c</span>(<span class="st">&quot;FALSE&quot;</span>,<span class="st">&quot;TRUE&quot;</span>)))</a></code></pre></div>
+<p>Agora vejamos a “glimpse” final do dado:</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb11-1" data-line-number="1"><span class="kw">glimpse</span>(bike_data)</a></code></pre></div>
+<pre><code>## Rows: 25,617
+## Columns: 9
+## $ date_time   &lt;dttm&gt; 2018-01-01 00:00:00, 2018-01-01 01:00:00, 2018-01-01 02:0…
+## $ casual      &lt;dbl&gt; 6, 11, 7, 1, 2, 3, 0, 1, 0, 1, 6, 11, 21, 19, 17, 12, 6, 6…
+## $ member      &lt;dbl&gt; 28, 38, 30, 8, 10, 5, 9, 10, 19, 30, 55, 86, 83, 97, 96, 1…
+## $ hour        &lt;fct&gt; 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, …
+## $ weekday     &lt;fct&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA…
+## $ season      &lt;fct&gt; Winter, Winter, Winter, Winter, Winter, Winter, Winter, Wi…
+## $ holiday     &lt;fct&gt; TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE…
+## $ total       &lt;dbl&gt; 34, 49, 37, 9, 12, 8, 9, 11, 19, 31, 61, 97, 104, 116, 113…
+## $ temperature &lt;dbl&gt; -7.20, -7.80, -8.30, -8.30, -8.30, -8.90, -8.90, -8.90, -1…</code></pre>
+<p>Salvando o dado limpo para arquivamento:</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb13-1" data-line-number="1"><span class="kw">save</span>(bike_data,<span class="dt">file=</span><span class="kw">paste0</span>(bike_path,<span class="st">&quot;bike_data_cleaned.rda&quot;</span>))</a>
+<a class="sourceLine" id="cb13-2" data-line-number="2"><span class="kw">save</span>(bike_data,<span class="dt">file=</span><span class="kw">paste0</span>(bike_path,<span class="st">&quot;bike_data_cleaned.csv&quot;</span>))</a></code></pre></div>
+</div>
+</div>
+<div id="análise-exploratória" class="section level1">
+<h1><span class="header-section-number">3</span> Análise Exploratória</h1>
+<div id="visualizações-iniciais" class="section level2">
+<h2><span class="header-section-number">3.1</span> Visualizações iniciais</h2>
+<p>Começaremos a análise com algumas medidas de resumo das variáveis quantitativas <code>casual</code>, <code>member</code>, <code>total</code> e <code>temperature</code>:</p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb14-1" data-line-number="1"><span class="kw">load</span>(<span class="kw">paste0</span>(bike_path,<span class="st">&quot;bike_data_cleaned.rda&quot;</span>))</a>
+<a class="sourceLine" id="cb14-2" data-line-number="2">bike_data <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">select</span>(casual,member,total,temperature) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">summary</span>()</a></code></pre></div>
+<pre><code>##      casual            member           total         temperature    
+##  Min.   :   0.00   Min.   :   0.0   Min.   :   1.0   Min.   :-12.80  
+##  1st Qu.:   7.00   1st Qu.:  50.0   1st Qu.:  64.0   1st Qu.:  7.20  
+##  Median :  31.00   Median : 195.0   Median : 258.0   Median : 16.10  
+##  Mean   :  77.82   Mean   : 276.7   Mean   : 354.5   Mean   : 15.57  
+##  3rd Qu.: 103.00   3rd Qu.: 395.0   3rd Qu.: 527.0   3rd Qu.: 23.90  
+##  Max.   :1244.00   Max.   :1702.0   Max.   :2038.0   Max.   : 37.20</code></pre>
+<p>Seguem os boxplots, para melhor visualização das medidas acima:</p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb16-1" data-line-number="1">p1 &lt;-<span class="st"> </span><span class="kw">ggplot</span>(bike_data) <span class="op">+</span><span class="st"> </span><span class="kw">geom_boxplot</span>(<span class="kw">aes</span>(<span class="dt">y=</span>casual))</a>
+<a class="sourceLine" id="cb16-2" data-line-number="2">p2 &lt;-<span class="st"> </span><span class="kw">ggplot</span>(bike_data) <span class="op">+</span><span class="st"> </span><span class="kw">geom_boxplot</span>(<span class="kw">aes</span>(<span class="dt">y=</span>member))</a>
+<a class="sourceLine" id="cb16-3" data-line-number="3">p3 &lt;-<span class="st"> </span><span class="kw">ggplot</span>(bike_data) <span class="op">+</span><span class="st"> </span><span class="kw">geom_boxplot</span>(<span class="kw">aes</span>(<span class="dt">y=</span>total))</a>
+<a class="sourceLine" id="cb16-4" data-line-number="4">p4 &lt;-<span class="st"> </span><span class="kw">ggplot</span>(bike_data) <span class="op">+</span><span class="st"> </span><span class="kw">geom_boxplot</span>(<span class="kw">aes</span>(<span class="dt">y=</span>temperature))</a>
+<a class="sourceLine" id="cb16-5" data-line-number="5"><span class="kw">grid.arrange</span>(p1, p2, p3,p4, <span class="dt">nrow =</span> <span class="dv">1</span>)</a></code></pre></div>
+<p><img src="BikeShareProject_files/figure-html/unnamed-chunk-13-1.png" /><!-- --></p>
+<p>Como podemos ver em <code>casual</code>, <code>member</code> e <code>total</code>, as distribuições de números de corridas por hora são bastante assimétricas. Isso provavemente se explica pela ciclicidade do aluguéis em horários maior e menor pico de uso. A temperatura segue uma distribuição melhor comportata, porém podemos ter uma ideia mais completa, subdividindo o plot pelas estações dos anos:</p>
+<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb17-1" data-line-number="1"><span class="co"># bike_data$season &lt;- factor(bike_data$season,)</span></a>
+<a class="sourceLine" id="cb17-2" data-line-number="2"><span class="kw">ggplot</span>(bike_data) <span class="op">+</span><span class="st"> </span><span class="kw">geom_boxplot</span>(<span class="kw">aes</span>(<span class="dt">x=</span>season,<span class="dt">y=</span>temperature)) </a></code></pre></div>
+<p><img src="BikeShareProject_files/figure-html/unnamed-chunk-14-1.png" /><!-- --></p>
+<p>Como esperado, o inverno é o período mais frio de Washington, chegando a alcançar temperaturas negativas, enquanto no verão a distribuição fica mais concentrada em temperaturas mais altas.</p>
+</div>
+<div id="analisando-assimetrias-e-dispersões" class="section level2">
+<h2><span class="header-section-number">3.2</span> Analisando assimetrias e dispersões</h2>
+<p>Vamos explorar um pouco mais a assimetria das colunas que contam os aluguéis, analisando a <code>total</code> como uma proxy das outras duas.</p>
+<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb18-1" data-line-number="1">med &lt;-<span class="st"> </span><span class="kw">median</span>(bike_data<span class="op">$</span>total)</a>
+<a class="sourceLine" id="cb18-2" data-line-number="2">bike_data <span class="op">%&gt;%</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb18-3" data-line-number="3"><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">u=</span><span class="kw">sort</span>(med<span class="op">-</span>total),</a>
+<a class="sourceLine" id="cb18-4" data-line-number="4">         <span class="dt">v=</span><span class="kw">sort</span>(total<span class="op">-</span>med)) <span class="op">%&gt;%</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb18-5" data-line-number="5"><span class="st">  </span><span class="kw">ggplot</span>() <span class="op">+</span><span class="st"> </span><span class="kw">aes</span>(u,v) <span class="op">+</span><span class="st"> </span><span class="kw">geom_point</span>() <span class="op">+</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb18-6" data-line-number="6"><span class="st">  </span><span class="kw">geom_abline</span>(<span class="dt">intercept =</span> <span class="dv">0</span>, <span class="dt">slope =</span> <span class="dv">1</span>, <span class="dt">color=</span><span class="st">&quot;red&quot;</span>) <span class="op">+</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb18-7" data-line-number="7"><span class="st">  </span><span class="kw">xlim</span>(<span class="dv">0</span>,<span class="dv">300</span>)<span class="op">+</span><span class="kw">ylim</span>(<span class="dv">0</span>,<span class="dv">1600</span>)<span class="op">+</span></a>
+<a class="sourceLine" id="cb18-8" data-line-number="8"><span class="st">  </span><span class="kw">labs</span>(<span class="dt">title=</span><span class="st">&quot;Gráfico de Dispersão - aluguéis por hora&quot;</span>)</a></code></pre></div>
+<p><img src="BikeShareProject_files/figure-html/unnamed-chunk-15-1.png" /><!-- --></p>
+<p>Como podemos ver, temos uma distrubuição estremamete assimétrica para cima, ou seja, os valores <code>v</code> que representam a diferença <code>mediana</code>-<code>total</code> são muito maiores do que os valores de <code>u</code> que representam a distància inversa à mediana, e note que tal discrepância ocorre com intensidade somente em valores altos de u e v. Isso mostra que há valores muito acima da mediana que estão causando tais assimetrias. O que pode ser explicado pela variação de horários de picos como veremos mais adiante.</p>
+<p>Um plot auxiliar é o gráfico qxq comparando quantis dos membros e usuários casuais:</p>
+<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb19-1" data-line-number="1">q_member=<span class="kw">quantile</span>(bike_data<span class="op">$</span>member,<span class="dt">probs =</span> <span class="kw">seq</span>(<span class="dv">0</span>,<span class="dv">1</span>,<span class="dv">1</span><span class="op">/</span><span class="dv">200</span>))</a>
+<a class="sourceLine" id="cb19-2" data-line-number="2">q_casual=<span class="kw">quantile</span>(bike_data<span class="op">$</span>casual,<span class="dt">probs =</span> <span class="kw">seq</span>(<span class="dv">0</span>,<span class="dv">1</span>,<span class="dv">1</span><span class="op">/</span><span class="dv">200</span>))</a>
+<a class="sourceLine" id="cb19-3" data-line-number="3">  <span class="kw">ggplot</span>() <span class="op">+</span><span class="st"> </span><span class="kw">aes</span>(q_member,q_casual) <span class="op">+</span><span class="st"> </span><span class="kw">geom_point</span>() <span class="op">+</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb19-4" data-line-number="4"><span class="st">  </span><span class="kw">geom_abline</span>(<span class="dt">intercept =</span> <span class="dv">0</span>, <span class="dt">slope =</span> <span class="dv">1</span>, <span class="dt">color=</span><span class="st">&quot;red&quot;</span>) <span class="op">+</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb19-5" data-line-number="5"><span class="st">    </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Gráfico de Quantis - Membros x Casuais&quot;</span>)<span class="op">+</span></a>
+<a class="sourceLine" id="cb19-6" data-line-number="6"><span class="st">    </span><span class="kw">xlab</span>(<span class="st">&quot;Quantis - Membros&quot;</span>) <span class="op">+</span><span class="st"> </span><span class="kw">ylab</span>(<span class="st">&quot;Quantis - Casuais&quot;</span>)</a></code></pre></div>
+<p><img src="BikeShareProject_files/figure-html/unnamed-chunk-16-1.png" /><!-- --></p>
+<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb20-1" data-line-number="1">  <span class="co"># labs(title=&quot;Gráfio de dispersão - aluguéis por dia (mediana)&quot;)</span></a></code></pre></div>
+<p>O gráfico acima nos dá uma evidência de que os membros são mais ativos do que os usuários casuais, pois os pontos estão majoritariamente abaixo da reta identidade, indicando que dado um quantil-p dos membros, o quantil-p correspondente dos casuais é menor.</p>
+<p>Retornando à ideia da dispersão e assimetria das corridas, podemos responder a primeira pergunta formulada no início deste texto, que diz respeito aos horários de pico dos aluguéis de bicicletas. Os gráficos abaixo mostram um padrão interessante:</p>
+<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb21-1" data-line-number="1"><span class="kw">ggplot</span>(bike_data) <span class="op">+</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb21-2" data-line-number="2"><span class="st">  </span><span class="kw">geom_point</span>(<span class="kw">aes</span>(<span class="dt">x=</span>hour,<span class="dt">y=</span>casual,<span class="dt">color=</span><span class="st">&quot;steelblue&quot;</span>))<span class="op">+</span></a>
+<a class="sourceLine" id="cb21-3" data-line-number="3"><span class="st">  </span><span class="kw">geom_point</span>(<span class="kw">aes</span>(<span class="dt">x=</span><span class="kw">as.numeric</span>(hour)<span class="op">-</span><span class="fl">0.35</span>,<span class="dt">y=</span>member,<span class="dt">color=</span><span class="st">&quot;orange&quot;</span>))<span class="op">+</span></a>
+<a class="sourceLine" id="cb21-4" data-line-number="4"><span class="st">  </span><span class="kw">scale_color_identity</span>(<span class="dt">name =</span> <span class="st">&quot;Tipo&quot;</span>,</a>
+<a class="sourceLine" id="cb21-5" data-line-number="5">                          <span class="dt">breaks =</span> <span class="kw">c</span>(<span class="st">&quot;steelblue&quot;</span>, <span class="st">&quot;orange&quot;</span>),</a>
+<a class="sourceLine" id="cb21-6" data-line-number="6">                          <span class="dt">labels =</span> <span class="kw">c</span>(<span class="st">&quot;Casual&quot;</span>, <span class="st">&quot;Membro&quot;</span>),</a>
+<a class="sourceLine" id="cb21-7" data-line-number="7">                          <span class="dt">guide =</span> <span class="st">&quot;legend&quot;</span>)<span class="op">+</span></a>
+<a class="sourceLine" id="cb21-8" data-line-number="8"><span class="st">  </span><span class="kw">labs</span>(<span class="dt">x=</span><span class="st">&quot;hora&quot;</span>,<span class="dt">y=</span><span class="st">&quot;contagem&quot;</span>)</a></code></pre></div>
+<p><img src="BikeShareProject_files/figure-html/unnamed-chunk-17-1.png" /><!-- --></p>
+<p>Podemos ver em ambos os gráficos um baixo uso entre meia-noite e 6 da manhã, e no gráfico dos Membros temos um pico entre 7h e 8h da manhã e um segundo pico entre 17h e 18h. Já no gráfico dos casuais, o uso cresce de forma mais suave durante o dia até seu máximo próximo às 15h e começa a decrescer devagar até à noite.</p>
+<p>Tal comportamento do gráfico pode estar relacionado ao fato de que membros registrados tender a assinar o serviço pois farão uso diário para ir e voltar do trabalho/escola por exemplo, o que levaria os picos nos horários observados. Quanto ao gráfico dos casuais, não temos muitas surpresas, essa suavidade, com uso baixo à noite e madrugada e mais intenso ao dia era o esperado de um serviço desse tipo.</p>
+<p>Podemos calcular o grau de associação <span class="math inline">\(R^2\)</span> das variáveis <code>hour</code> contra <code>casual</code> e <code>member</code>, seguindo os códigos de referência do monitor <a href="https://gist.github.com/tiagodsilva/537e92a5269f85123d5a84b598311454">Tiago Silva</a>.</p>
+<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb22-1" data-line-number="1">totalvar &lt;-<span class="st"> </span><span class="kw">var</span>(bike_data<span class="op">$</span>casual)</a>
+<a class="sourceLine" id="cb22-2" data-line-number="2">registers &lt;-<span class="st"> </span><span class="kw">table</span>(bike_data<span class="op">$</span>hour)</a>
+<a class="sourceLine" id="cb22-3" data-line-number="3">vars_casual &lt;-<span class="st"> </span><span class="kw">summarise</span>(<span class="kw">group_by</span>(bike_data, hour), </a>
+<a class="sourceLine" id="cb22-4" data-line-number="4">                 <span class="dt">var =</span> <span class="kw">var</span>(casual))[[<span class="st">&quot;var&quot;</span>]] </a>
+<a class="sourceLine" id="cb22-5" data-line-number="5">varbar_casual &lt;-<span class="st"> </span><span class="kw">sum</span>((vars_casual <span class="op">*</span><span class="st"> </span>registers))<span class="op">/</span><span class="kw">sum</span>(registers) </a>
+<a class="sourceLine" id="cb22-6" data-line-number="6">r2_casual &lt;-<span class="st"> </span><span class="dv">1</span> <span class="op">-</span><span class="st"> </span>(varbar_casual)<span class="op">/</span>totalvar  </a>
+<a class="sourceLine" id="cb22-7" data-line-number="7"></a>
+<a class="sourceLine" id="cb22-8" data-line-number="8">totalvar &lt;-<span class="st"> </span><span class="kw">var</span>(bike_data<span class="op">$</span>member)</a>
+<a class="sourceLine" id="cb22-9" data-line-number="9">vars_member &lt;-<span class="st"> </span><span class="kw">summarise</span>(<span class="kw">group_by</span>(bike_data, hour), </a>
+<a class="sourceLine" id="cb22-10" data-line-number="10">                 <span class="dt">var =</span> <span class="kw">var</span>(member))[[<span class="st">&quot;var&quot;</span>]] </a>
+<a class="sourceLine" id="cb22-11" data-line-number="11">varbar_member &lt;-<span class="st"> </span><span class="kw">sum</span>((vars_member <span class="op">*</span><span class="st"> </span>registers))<span class="op">/</span><span class="kw">sum</span>(registers) </a>
+<a class="sourceLine" id="cb22-12" data-line-number="12">r2_member &lt;-<span class="st"> </span><span class="dv">1</span> <span class="op">-</span><span class="st"> </span>(varbar_member)<span class="op">/</span>totalvar  </a>
+<a class="sourceLine" id="cb22-13" data-line-number="13">r2_casual;r2_member</a></code></pre></div>
+<pre><code>## [1] 0.289724</code></pre>
+<pre><code>## [1] 0.4911505</code></pre>
+<p>O primeiro número é o <span class="math inline">\(R^2\)</span> dos causuais e o segundo, dos membros; Como se observa, o <span class="math inline">\(R^2\)</span> dos membros é maior. Essa medida indica que a introdução da variável categórica <code>hour</code> faz com que a variância intraclasse se difira mais da variância total, quando mais próximo de 1, maior a intensidade dessa diferença, e quando mais próximo de zero, a dispersão não varia muito entre as classe. Nos dois casos os números estão suficientemente longe de zero, mas o fato da medida dos membros ser maior evidencia o fato que vimos graficamente sobre as dispersões nos horários de pico de início e fim de expediente.</p>
+<p>Um outra evidência de tal fato, segue da reprodução dos mesmos gráficos, porém divididos em feriados e dias úteis. A coluna <code>holiday</code> é <code>TRUE</code> para fins de semana e feriados, e <code>FALSE</code>para dias úteis.</p>
+<div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb25-1" data-line-number="1">g1 &lt;-<span class="st"> </span>bike_data <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">filter</span>(holiday<span class="op">==</span><span class="ot">FALSE</span>) <span class="op">%&gt;%</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb25-2" data-line-number="2"><span class="kw">ggplot</span>() <span class="op">+</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb25-3" data-line-number="3"><span class="st">  </span><span class="kw">geom_point</span>(<span class="kw">aes</span>(<span class="dt">x=</span>hour,<span class="dt">y=</span>casual,<span class="dt">color=</span><span class="st">&quot;steelblue&quot;</span>))<span class="op">+</span></a>
+<a class="sourceLine" id="cb25-4" data-line-number="4"><span class="st">  </span><span class="kw">geom_point</span>(<span class="kw">aes</span>(<span class="dt">x=</span><span class="kw">as.numeric</span>(hour)<span class="op">-</span><span class="fl">0.35</span>,<span class="dt">y=</span>member,<span class="dt">color=</span><span class="st">&quot;orange&quot;</span>))<span class="op">+</span></a>
+<a class="sourceLine" id="cb25-5" data-line-number="5"><span class="st">  </span><span class="kw">scale_color_identity</span>(<span class="dt">name =</span> <span class="st">&quot;Tipo&quot;</span>,</a>
+<a class="sourceLine" id="cb25-6" data-line-number="6">                          <span class="dt">breaks =</span> <span class="kw">c</span>(<span class="st">&quot;steelblue&quot;</span>, <span class="st">&quot;orange&quot;</span>),</a>
+<a class="sourceLine" id="cb25-7" data-line-number="7">                          <span class="dt">labels =</span> <span class="kw">c</span>(<span class="st">&quot;Casual&quot;</span>, <span class="st">&quot;Membro&quot;</span>),</a>
+<a class="sourceLine" id="cb25-8" data-line-number="8">                          <span class="dt">guide =</span> <span class="st">&quot;legend&quot;</span>)<span class="op">+</span></a>
+<a class="sourceLine" id="cb25-9" data-line-number="9"><span class="st">  </span><span class="kw">ylim</span>(<span class="dv">0</span>,<span class="dv">1600</span>)<span class="op">+</span></a>
+<a class="sourceLine" id="cb25-10" data-line-number="10"><span class="st">  </span><span class="kw">labs</span>(<span class="dt">title=</span><span class="st">&quot;Dias úteis&quot;</span>,<span class="dt">x=</span><span class="st">&quot;hora&quot;</span>,<span class="dt">y=</span><span class="st">&quot;contagem&quot;</span>)</a>
+<a class="sourceLine" id="cb25-11" data-line-number="11">g2 &lt;-<span class="st"> </span>bike_data <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">filter</span>(holiday<span class="op">==</span><span class="ot">TRUE</span>) <span class="op">%&gt;%</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb25-12" data-line-number="12"><span class="kw">ggplot</span>() <span class="op">+</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb25-13" data-line-number="13"><span class="st">  </span><span class="kw">geom_point</span>(<span class="kw">aes</span>(<span class="dt">x=</span>hour,<span class="dt">y=</span>casual,<span class="dt">color=</span><span class="st">&quot;steelblue&quot;</span>))<span class="op">+</span></a>
+<a class="sourceLine" id="cb25-14" data-line-number="14"><span class="st">  </span><span class="kw">geom_point</span>(<span class="kw">aes</span>(<span class="dt">x=</span><span class="kw">as.numeric</span>(hour)<span class="op">-</span><span class="fl">0.35</span>,<span class="dt">y=</span>member,<span class="dt">color=</span><span class="st">&quot;orange&quot;</span>))<span class="op">+</span></a>
+<a class="sourceLine" id="cb25-15" data-line-number="15"><span class="st">  </span><span class="kw">scale_color_identity</span>(<span class="dt">name =</span> <span class="st">&quot;Tipo&quot;</span>,</a>
+<a class="sourceLine" id="cb25-16" data-line-number="16">                          <span class="dt">breaks =</span> <span class="kw">c</span>(<span class="st">&quot;steelblue&quot;</span>, <span class="st">&quot;orange&quot;</span>),</a>
+<a class="sourceLine" id="cb25-17" data-line-number="17">                          <span class="dt">labels =</span> <span class="kw">c</span>(<span class="st">&quot;Casual&quot;</span>, <span class="st">&quot;Membro&quot;</span>),</a>
+<a class="sourceLine" id="cb25-18" data-line-number="18">                          <span class="dt">guide =</span> <span class="st">&quot;legend&quot;</span>)<span class="op">+</span></a>
+<a class="sourceLine" id="cb25-19" data-line-number="19"><span class="st">  </span><span class="kw">ylim</span>(<span class="dv">0</span>,<span class="dv">1600</span>)<span class="op">+</span></a>
+<a class="sourceLine" id="cb25-20" data-line-number="20"><span class="st">  </span><span class="kw">labs</span>(<span class="dt">title=</span><span class="st">&quot;Fins de Semanas e Feriados&quot;</span>,<span class="dt">x=</span><span class="st">&quot;hora&quot;</span>,<span class="dt">y=</span><span class="st">&quot;contagem&quot;</span>)</a>
+<a class="sourceLine" id="cb25-21" data-line-number="21"><span class="kw">grid.arrange</span>(g1,g2)</a></code></pre></div>
+<p><img src="BikeShareProject_files/figure-html/unnamed-chunk-19-1.png" /><!-- --></p>
+<p>Percebemos que nos fins de semana, o pico dos membros obsevado anteriormente deixa de existir, e há um aumento de forma geral na contagem de corridas durante à tarde, o que poderia ser explicado por usuários que usam o serviço para o lazer aos feriados e fins de semana.</p>
+<p>Um comparativo de duas variáveis categórias que complementa a discussão acima seria a tabela de contingência entre <code>hour</code> e <code>holiday</code>, usando a soma de <code>total</code> como conteúdo e resumo dos dados.</p>
+<div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb26-1" data-line-number="1">hour_holiday &lt;-<span class="st"> </span>bike_data <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">group_by</span>(hour,holiday) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb26-2" data-line-number="2"><span class="st">  </span><span class="kw">summarise</span>(<span class="dt">total_sum=</span><span class="kw">sum</span>(total))  <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb26-3" data-line-number="3"><span class="st">  </span><span class="kw">spread</span>(<span class="dt">key=</span>holiday,<span class="dt">value=</span>total_sum)</a>
+<a class="sourceLine" id="cb26-4" data-line-number="4">hour_holiday</a></code></pre></div>
+<div class="kable-table">
+<table>
+<thead>
+<tr class="header">
+<th align="left">hour</th>
+<th align="right">FALSE</th>
+<th align="right">TRUE</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">0</td>
+<td align="right">34090</td>
+<td align="right">40820</td>
+</tr>
+<tr class="even">
+<td align="left">1</td>
+<td align="right">15091</td>
+<td align="right">26001</td>
+</tr>
+<tr class="odd">
+<td align="left">2</td>
+<td align="right">8150</td>
+<td align="right">17169</td>
+</tr>
+<tr class="even">
+<td align="left">3</td>
+<td align="right">4852</td>
+<td align="right">8885</td>
+</tr>
+<tr class="odd">
+<td align="left">4</td>
+<td align="right">11256</td>
+<td align="right">4569</td>
+</tr>
+<tr class="even">
+<td align="left">5</td>
+<td align="right">55891</td>
+<td align="right">6683</td>
+</tr>
+<tr class="odd">
+<td align="left">6</td>
+<td align="right">175951</td>
+<td align="right">17041</td>
+</tr>
+<tr class="even">
+<td align="left">7</td>
+<td align="right">409126</td>
+<td align="right">37594</td>
+</tr>
+<tr class="odd">
+<td align="left">8</td>
+<td align="right">645388</td>
+<td align="right">75964</td>
+</tr>
+<tr class="even">
+<td align="left">9</td>
+<td align="right">341549</td>
+<td align="right">125655</td>
+</tr>
+<tr class="odd">
+<td align="left">10</td>
+<td align="right">210594</td>
+<td align="right">172217</td>
+</tr>
+<tr class="even">
+<td align="left">11</td>
+<td align="right">240318</td>
+<td align="right">205068</td>
+</tr>
+<tr class="odd">
+<td align="left">12</td>
+<td align="right">291268</td>
+<td align="right">231154</td>
+</tr>
+<tr class="even">
+<td align="left">13</td>
+<td align="right">291738</td>
+<td align="right">239377</td>
+</tr>
+<tr class="odd">
+<td align="left">14</td>
+<td align="right">287476</td>
+<td align="right">241785</td>
+</tr>
+<tr class="even">
+<td align="left">15</td>
+<td align="right">349839</td>
+<td align="right">241307</td>
+</tr>
+<tr class="odd">
+<td align="left">16</td>
+<td align="right">483422</td>
+<td align="right">230509</td>
+</tr>
+<tr class="even">
+<td align="left">17</td>
+<td align="right">758616</td>
+<td align="right">208929</td>
+</tr>
+<tr class="odd">
+<td align="left">18</td>
+<td align="right">627732</td>
+<td align="right">176116</td>
+</tr>
+<tr class="even">
+<td align="left">19</td>
+<td align="right">415489</td>
+<td align="right">140115</td>
+</tr>
+<tr class="odd">
+<td align="left">20</td>
+<td align="right">276902</td>
+<td align="right">102282</td>
+</tr>
+<tr class="even">
+<td align="left">21</td>
+<td align="right">193222</td>
+<td align="right">77258</td>
+</tr>
+<tr class="odd">
+<td align="left">22</td>
+<td align="right">136097</td>
+<td align="right">61363</td>
+</tr>
+<tr class="even">
+<td align="left">23</td>
+<td align="right">86120</td>
+<td align="right">44328</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>Com a tabela podemos realizar o teste chi-quadrado, avaliando a medida <span class="math inline">\(\chi^2\)</span>, que sob a hipótese de independência entre feriados e corridas por hora, seria próximo de zero.</p>
+<div class="sourceCode" id="cb27"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb27-1" data-line-number="1"><span class="co">#Referência: https://gist.github.com/tiagodsilva/537e92a5269f85123d5a84b598311454</span></a>
+<a class="sourceLine" id="cb27-2" data-line-number="2">m &lt;-<span class="st"> </span>hour_holiday[,<span class="dv">2</span><span class="op">:</span><span class="dv">3</span>]</a>
+<a class="sourceLine" id="cb27-3" data-line-number="3">rs &lt;-<span class="st"> </span><span class="kw">rowSums</span>(m)</a>
+<a class="sourceLine" id="cb27-4" data-line-number="4">cs &lt;-<span class="st"> </span><span class="kw">colSums</span>(m)</a>
+<a class="sourceLine" id="cb27-5" data-line-number="5">em &lt;-<span class="st"> </span><span class="kw">matrix</span>(<span class="dt">nrow =</span> <span class="dv">24</span>, <span class="dt">ncol =</span> <span class="dv">2</span>) <span class="co"># valores esperados </span></a>
+<a class="sourceLine" id="cb27-6" data-line-number="6"><span class="cf">for</span>(j <span class="cf">in</span> <span class="dv">1</span><span class="op">:</span><span class="dv">2</span>) em[, j] &lt;-<span class="st"> </span>(cs[j]<span class="op">*</span>rs)<span class="op">/</span><span class="kw">sum</span>(cs)</a>
+<a class="sourceLine" id="cb27-7" data-line-number="7">chiSquared =<span class="st"> </span><span class="kw">sum</span>((m <span class="op">-</span><span class="st"> </span>em)<span class="op">^</span><span class="dv">2</span><span class="op">/</span>em) </a>
+<a class="sourceLine" id="cb27-8" data-line-number="8">chiSquared</a></code></pre></div>
+<pre><code>## [1] 717660.8</code></pre>
+<p>Utilizando a função pronta do pacote <code>stats</code> podemos analisar o p-valor da estatística acima, mas de antemão, vemos que é um número bem distante de zero, nos dando fortes indícios de que a distribuição por hora é dependente da variável de feriado.</p>
+<div class="sourceCode" id="cb29"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb29-1" data-line-number="1"><span class="kw">chisq.test</span>(m)</a></code></pre></div>
+<pre><code>## 
+##  Pearson&#39;s Chi-squared test
+## 
+## data:  m
+## X-squared = 717661, df = 23, p-value &lt; 2.2e-16</code></pre>
+<p>Com um p-valor de <span class="math inline">\(2,2\times 10^{-16}\)</span> temos evidência estatística para rejeitar a hipótese de independência das variáveis <code>hour</code> e <code>holiday</code> ambas categóricas neste contexto.</p>
+</div>
+<div id="influência-do-clima" class="section level2">
+<h2><span class="header-section-number">3.3</span> Influência do clima</h2>
+<p>Para responder a pergunta “Como as condições climáticas afetam as corridas?” podemos fazer um gráfico de dispersão e analisar a correlação entre as variáveis <code>temperature</code> e <code>total</code>, mas antes vamos fazer uma simplificação do dado, agrupando por dia e resumindo o total de corridas pela soma, e a temperatura pela média, isso para reduzirmos o ruído intradiário que foi analisado anteriormente, e considerarmos tendências de mais longo prazo.</p>
+<div class="sourceCode" id="cb31"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb31-1" data-line-number="1">bike_data_by_day &lt;-<span class="st"> </span>bike_data <span class="op">%&gt;%</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb31-2" data-line-number="2"><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">day=</span><span class="kw">date</span>(date_time)) <span class="op">%&gt;%</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb31-3" data-line-number="3"><span class="st">  </span><span class="kw">group_by</span>(day) <span class="op">%&gt;%</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb31-4" data-line-number="4"><span class="st">  </span><span class="kw">summarise</span>(<span class="dt">temperature=</span><span class="kw">mean</span>(temperature),</a>
+<a class="sourceLine" id="cb31-5" data-line-number="5">            <span class="dt">total=</span><span class="kw">sum</span>(total),</a>
+<a class="sourceLine" id="cb31-6" data-line-number="6">            <span class="dt">season=</span><span class="kw">first</span>(season),</a>
+<a class="sourceLine" id="cb31-7" data-line-number="7">            <span class="dt">member=</span><span class="kw">sum</span>(member),</a>
+<a class="sourceLine" id="cb31-8" data-line-number="8">            <span class="dt">casual=</span><span class="kw">sum</span>(casual)) </a>
+<a class="sourceLine" id="cb31-9" data-line-number="9"><span class="kw">ggplot</span>(bike_data_by_day)<span class="op">+</span></a>
+<a class="sourceLine" id="cb31-10" data-line-number="10"><span class="st">  </span><span class="kw">aes</span>(<span class="dt">y=</span>total,<span class="dt">x=</span>temperature)<span class="op">+</span></a>
+<a class="sourceLine" id="cb31-11" data-line-number="11"><span class="st">  </span><span class="kw">geom_point</span>(<span class="dt">color=</span><span class="st">&quot;darkgreen&quot;</span>)<span class="op">+</span></a>
+<a class="sourceLine" id="cb31-12" data-line-number="12"><span class="st">  </span><span class="kw">geom_smooth</span>(<span class="dt">method=</span>lm)<span class="op">+</span></a>
+<a class="sourceLine" id="cb31-13" data-line-number="13"><span class="st">  </span><span class="kw">labs</span>(<span class="dt">title=</span><span class="st">&quot;Temperatura vs. Aluguéis/dia&quot;</span>,</a>
+<a class="sourceLine" id="cb31-14" data-line-number="14">       <span class="dt">x=</span><span class="st">&quot;Temperatura&quot;</span>,</a>
+<a class="sourceLine" id="cb31-15" data-line-number="15">       <span class="dt">y=</span><span class="st">&quot;Total de Aluguéis por dia&quot;</span>)</a></code></pre></div>
+<p><img src="BikeShareProject_files/figure-html/unnamed-chunk-23-1.png" /><!-- --></p>
+<p>Podemos ver que há uma relação entre temperaturas mais altas e mais corridas, assim como em temperaturas mais baixas, menos corridas. Não é uma relação perfeitamente linear, porém é bem claro que tal relação existe. A baixas temperaturas de Washington são muito rigorosas e podem estar acompanhadas de tempestades de neve, neblina ou eventos relacionados, que levaria ao uso do serviço apenas em situações de real necessidade. Já em temperaturas normais, ou mais quentes, as pessoas tenderiam a alugar mais bicicletas para o lazer ao ar livre, o que explicaria a tendência observada no gráfico.</p>
+<p>Estatisticamente, podemos evidenciar tal fato analisando o coeficiente angular da reta de regressão linear, e sua significância estatística. Abaixo vemos que tal coeficiente é positivo (indicando que quanto maior a temperatura maior o número de viagens) e estatisticamente significante com p-valor na casa de <span class="math inline">\(10^{-16}\)</span>.</p>
+<div class="sourceCode" id="cb32"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb32-1" data-line-number="1">linear_model &lt;-<span class="st"> </span><span class="kw">lm</span>(total<span class="op">~</span>temperature,bike_data_by_day)</a>
+<a class="sourceLine" id="cb32-2" data-line-number="2"><span class="kw">summary</span>(linear_model)</a></code></pre></div>
+<pre><code>## 
+## Call:
+## lm(formula = total ~ temperature, data = bike_data_by_day)
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -7552.8 -1961.6   379.5  2024.5 10522.6 
+## 
+## Coefficients:
+##             Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept) 4772.332    171.615   27.81   &lt;2e-16 ***
+## temperature  240.536      9.438   25.49   &lt;2e-16 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 2889 on 1064 degrees of freedom
+## Multiple R-squared:  0.3791, Adjusted R-squared:  0.3785 
+## F-statistic: 649.6 on 1 and 1064 DF,  p-value: &lt; 2.2e-16</code></pre>
+</div>
+<div id="impactos-da-pandemia" class="section level2">
+<h2><span class="header-section-number">3.4</span> Impactos da Pandemia</h2>
+<p>No mês de Março de 2020 os primeiros casos de Covid-19 começaram a circular em Washington D.C e no mesmo mês, foram impostas medidas de restrição de circulação como forma de controlar o espalhamento da doença; Desde então os Estados Unidos e o mundo como um todo vêm trabalhando em maior ou menor grau com tais medidas restritivas, a circulação, no momento que escrevo este texto, contínua restrita no mundo todo, à espera do avanço das campanhas de vacinação da população. <strong>Como pandemia afetou a empresa em 2020?</strong> essa é uma pergunta que será respondida em alguns passos, primeiro um boxplot clássico com a dispersão em cada ano disponível no dado (2018,2019,2020)</p>
+<div class="sourceCode" id="cb34"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb34-1" data-line-number="1">bike_data_by_day &lt;-<span class="st"> </span>bike_data_by_day <span class="op">%&gt;%</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb34-2" data-line-number="2"><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">year=</span><span class="kw">factor</span>(<span class="kw">year</span>(day),<span class="kw">c</span>(<span class="dv">2018</span>,<span class="dv">2019</span>,<span class="dv">2020</span>))) </a>
+<a class="sourceLine" id="cb34-3" data-line-number="3"></a>
+<a class="sourceLine" id="cb34-4" data-line-number="4">g1 &lt;-<span class="st"> </span><span class="kw">ggplot</span>(bike_data_by_day) <span class="op">+</span><span class="st"> </span><span class="kw">aes</span>(<span class="dt">x=</span>year,<span class="dt">y=</span>total) <span class="op">+</span><span class="st"> </span><span class="kw">geom_boxplot</span>() <span class="op">+</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb34-5" data-line-number="5"><span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Aluguéis por ano (Total)&quot;</span>,</a>
+<a class="sourceLine" id="cb34-6" data-line-number="6">       <span class="dt">x =</span> <span class="st">&quot;Ano&quot;</span>, <span class="dt">y =</span><span class="st">&quot;Total de Aluguéis&quot;</span>)</a>
+<a class="sourceLine" id="cb34-7" data-line-number="7">g2 &lt;-<span class="st"> </span><span class="kw">ggplot</span>(bike_data_by_day) <span class="op">+</span><span class="st"> </span><span class="kw">aes</span>(<span class="dt">x=</span>year,<span class="dt">y=</span>member) <span class="op">+</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb34-8" data-line-number="8"><span class="st">  </span><span class="kw">geom_boxplot</span>(<span class="dt">fill=</span><span class="st">&quot;orange&quot;</span>) <span class="op">+</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb34-9" data-line-number="9"><span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Aluguéis por ano (Membros)&quot;</span>,</a>
+<a class="sourceLine" id="cb34-10" data-line-number="10">       <span class="dt">x =</span> <span class="st">&quot;Ano&quot;</span>, <span class="dt">y =</span><span class="st">&quot;Membros&quot;</span>)</a>
+<a class="sourceLine" id="cb34-11" data-line-number="11">g3 &lt;-<span class="st"> </span><span class="kw">ggplot</span>(bike_data_by_day) <span class="op">+</span><span class="st"> </span><span class="kw">aes</span>(<span class="dt">x=</span>year,<span class="dt">y=</span>casual) <span class="op">+</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb34-12" data-line-number="12"><span class="st">  </span><span class="kw">geom_boxplot</span>(<span class="dt">fill=</span><span class="st">&quot;steelblue&quot;</span>) <span class="op">+</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb34-13" data-line-number="13"><span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Aluguéis por ano (Casuais)&quot;</span>,</a>
+<a class="sourceLine" id="cb34-14" data-line-number="14">       <span class="dt">x =</span> <span class="st">&quot;Ano&quot;</span>, <span class="dt">y =</span><span class="st">&quot;Casuais&quot;</span>)</a>
+<a class="sourceLine" id="cb34-15" data-line-number="15"><span class="kw">grid.arrange</span>(g2,g3,g1,<span class="dt">nrow=</span><span class="dv">2</span>)</a></code></pre></div>
+<p><img src="BikeShareProject_files/figure-html/unnamed-chunk-25-1.png" /><!-- --></p>
+<p>Como podemos ver, de fato houve um impacto negativo no número total de corridas pelo terceiro boxplot, porém tal impacto parece ter sido causado pelos usuário membros, na qual a queda foi mais brusca do que nos casuais, que inclusive, aumentaram a frequência de corridas em relação ao ano de 2019.</p>
+<p>Abaixo temos outros plots complementares que evidenciam isso, note que fizemos a segregação das estações do ano pelas cores, pois tal variável afeta o número de aluguéis que se comporta de forma sazional em relação à esta variável.</p>
+<div class="sourceCode" id="cb35"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb35-1" data-line-number="1"><span class="co">#filter(day&gt;=&quot;2019-12-01&quot; &amp; day&lt;=&quot;2020-07-01&quot;) %&gt;%</span></a>
+<a class="sourceLine" id="cb35-2" data-line-number="2">g1 &lt;-<span class="st"> </span>bike_data_by_day <span class="op">%&gt;%</span><span class="st">  </span></a>
+<a class="sourceLine" id="cb35-3" data-line-number="3"><span class="kw">ggplot</span>()<span class="op">+</span><span class="kw">aes</span>(<span class="dt">x=</span>day,<span class="dt">y=</span>member,<span class="dt">colour=</span>season)<span class="op">+</span><span class="kw">geom_point</span>() <span class="op">+</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb35-4" data-line-number="4"><span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Member&quot;</span>,<span class="dt">x=</span><span class="st">&quot;Date&quot;</span>)</a>
+<a class="sourceLine" id="cb35-5" data-line-number="5"></a>
+<a class="sourceLine" id="cb35-6" data-line-number="6">g2&lt;-<span class="st"> </span>bike_data_by_day <span class="op">%&gt;%</span><span class="st">  </span></a>
+<a class="sourceLine" id="cb35-7" data-line-number="7"><span class="kw">ggplot</span>()<span class="op">+</span><span class="kw">aes</span>(<span class="dt">x=</span>day,<span class="dt">y=</span>casual,<span class="dt">colour=</span>season)<span class="op">+</span><span class="kw">geom_point</span>() <span class="op">+</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb35-8" data-line-number="8"><span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Casual&quot;</span>,<span class="dt">x=</span><span class="st">&quot;Date&quot;</span>) </a>
+<a class="sourceLine" id="cb35-9" data-line-number="9"></a>
+<a class="sourceLine" id="cb35-10" data-line-number="10"><span class="kw">grid.arrange</span>(g1,g2)</a></code></pre></div>
+<p><img src="BikeShareProject_files/figure-html/unnamed-chunk-26-1.png" /><!-- --></p>
+<p>As medidas restritivas foram decretadas na transição entre o inverno (hemisfério norte) e primavera de 2020. Vemos acima que as corridas dos membros por volta desse ponto caíram de forma mas acentuada. Uma possível explicação é que os membros registrados eram pessoas que usavam o serviço para se deslocar para o trabalho/escola, que deixaram de necessitar do serviço por conta da suspensão de atividades laborais/educacionais presenciais.</p>
+<p>A subida dos usuários casuais tem algumas explicações plausíveis. A primeira é que trabalhadores essenciais, de serviços de saúde, alimentação, varejo essencial e indústria, continuaram trabalhando e possivelmente adotaram bicicletas como meio de descolamento como alternativa à ônibus, trens e metrôs que envolviam maiores aglomerações.</p>
+<p>A Capital BikeShare, como divulgado em seu <a href="https://www.capitalbikeshare.com/blog/covid19">blog</a> também fez um movimento que possa ter ajudado nesse aumento de usuários causuais durante a pandemia. No dia 8 de Março de 2020 foi feita a publicação citada, anunciando medidas a serem tomadas pela empresa em relação à pandemia.</p>
+<p>Além do desinfetamento das bicicletas no local de chegada, adoção do uso de máscaras e luvas pelos funcionários que lidam diretamente com as bikes, foi lançada uma promoção para trabalhadores essenciais, oferecendo gratuitamente até 31 de Julho de 2020, corridas grátis e ilimitadas do tipo <code>Single Trip</code> que são categorisadas como casuais nos dados. Além disso, ofereceram descontos em corridas <code>Single Trip</code> para usuários que necessitassem de fazer algum deslocamento essencial. Tais ações, provavelmente inflaram o número de corridas causuais como vemos nos gráficos acima, mas certamente, é uma forma de deslocamento muito mas segura do que um transporte público, se todas as medidas de higiene forem tomadas.</p>
+</div>
+</div>
+<div id="comentários-finais-e-conclusões" class="section level1">
+<h1><span class="header-section-number">4</span> Comentários finais e Conclusões</h1>
+<p>O processo de obtenção dos dados apesar de trabalhoso, valeu muito à pena, pelas análises finais que conseguimos realizar. No início do texto formulamos as seguintes perguntas:</p>
+<ul>
+<li>Quais são os horários de pico do aluguéis?</li>
+<li>Como feriados/fins de semana afetam o número de corridas?</li>
+<li>Como as condições climáticas afetam as corridas?</li>
+<li>Como pandemia afetou a empresa em 2020?</li>
+</ul>
+<p>Como já pontuamos ao longo desde texto, conseguimos responder todas elas usando medidas estatísticas e visualizações adequadas. Sobre os horários de pico, identificamos que nos momentos de início e fim de expediente as corridas de membros eram recordes, enquanto as corridas casuais eram distribuidas mais suavemente durante o dia, comseu pico à tarde.</p>
+<p>A dinâmica dos finais de semana e feriados remove os picos dos usuários membros e faz com que a distribuição seja mais suave, enquanto as corridas casuais aumentam, indicando possívelmente mais pessoas usando o serviço para lazer.</p>
+<p>Além disso identificamos uma correlação positiva entre temperatura e total de aluguéis, indicando que temperaturas mais altas favorecem o uso do serviço. Por fim, foram feitas visualizações do impacto da pamdemia da COVID-19 na empresa, vimos que apesar de usuários membros reduzirem seu uso, as medidas de incentivo ao uso de bicicleta para trabalhadores essenciais, aumentaram as corridas casuais, o que provavelmente teve um impacto positivo na redução de aglomerações em transportes públicos.</p>
+<p>A bibliotecas úteis estão referenciadas, mas sem dúvida as mais importantes foram o <code>tidyverse</code> (e seus subpacotes), e a <code>rnoaa</code> para a obtenção dos dados de temperatura. O processo não foi explícito neste texto, mas como citado anteriormente, está em um script em separado, por questões de performance e organização.</p>
+</div>
+<div id="referências" class="section level1 unnumbered">
+<h1>Referências</h1>
+<div id="refs" class="references">
+<div id="ref-grid">
+<p>Auguie, Baptiste. 2017. <em>GridExtra: Miscellaneous Functions for &quot;Grid&quot; Graphics</em>. <a href="https://CRAN.R-project.org/package=gridExtra" class="uri">https://CRAN.R-project.org/package=gridExtra</a>.</p>
+</div>
+<div id="ref-rnoaa">
+<p>Chamberlain, Scott. 2021. <em>Rnoaa: ’NOAA’ Weather Data from R</em>. <a href="https://CRAN.R-project.org/package=rnoaa" class="uri">https://CRAN.R-project.org/package=rnoaa</a>.</p>
+</div>
+<div id="ref-tidy">
+<p>Wickham, Hadley, Mara Averick, Jennifer Bryan, Winston Chang, Lucy D’Agostino McGowan, Romain François, Garrett Grolemund, et al. 2019. “Welcome to the tidyverse.” <em>Journal of Open Source Software</em> 4 (43): 1686. <a href="https://doi.org/10.21105/joss.01686" class="uri">https://doi.org/10.21105/joss.01686</a>.</p>
+</div>
+<div id="ref-timedate">
+<p>Wuertz, Diethelm, Tobias Setz, Yohan Chalabi, Martin Maechler, and Joe W. Byers. 2018. <em>TimeDate: Rmetrics - Chronological and Calendar Objects</em>. <a href="https://CRAN.R-project.org/package=timeDate" class="uri">https://CRAN.R-project.org/package=timeDate</a>.</p>
+</div>
+</div>
+</div>
+    </section>
+  </div>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
