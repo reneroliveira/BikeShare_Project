@@ -1,0 +1,423 @@
+---
+title: "BikeShare Project"
+author: "Rener de Souza Oliveira"
+date: "`r format(Sys.time(), '%d %B %Y')`"
+bibliography: refs.bib
+
+output: 
+  prettydoc::html_pretty: # install.packages('prettydoc') 
+    theme: architect 
+    hightlight: github 
+    toc: true # table of contents 
+    number_sections: true 
+    df_print: kable  # como o dataframe vai ser imprimdo 
+  margin: 5cm 
+nocite: | 
+  @tidy, @grid, @timedate, @rnoaa
+---
+
+```{r setup, include=TRUE,cache = FALSE,echo=FALSE,message=FALSE}
+knitr::opts_chunk$set(echo = TRUE,message=FALSE,warning=FALSE,fig.height=4, fig.width=4*5/3)
+#Sys.setlocale("LC_TIME","en_US.UTF-8")
+```
+
+# Bases de Dados
+
+## Apresentação e Motivações
+
+A base de dados escolhida foi a da [Capital BikeShare](https://www.capitalbikeshare.com/system-data) uma empresa de bicicletas compartilhadas que oferece seu serviço na cidade de Washington D.C e sua vizinhança. A empresa disponibiliza em seu site de forma aberta, todas as corridas realizadas por seus clientes, registrando na base de dados original, dados como hora exata da retirada da bicicleta, local da estação, tipo de cliente, etc, porém algumas simplificações foram feitas para agregar os dados brutos como veremos a  seguir. 
+
+![](BSS.png)
+
+Uma segunda base de dados, auxiliar a primeira, é uma tabela com temperaturas registradas na cidade de Washington D.C, cuja fonte é [National Oceanic and Atmospheric Administration](noaa.gov) que disponibiliza esses dados atravpes da biblioteca [rnoaa](https://cran.r-project.org/web/packages/rnoaa/index.html).
+
+As motivações para tais escolhas foram duas: A primeira é que o autor que vos escreve é um amante de bicicletas e era um cliente assíduo e fiel da [Bike Itaú](https://bikeitau.com.br/), um projeto similar de bicicletas compartilhadas que funciona no Rio de Janeiro e em outras cidades. O uso de tais bicicletas era quase diário, tanto pra ir e voltar da faculdade nos dias úteis, quanto pra se exercitar no Aterro do Flamengo aos finais de semana, ou dar uma volta descompromissada na Orla da Praia de Botafogo. 
+
+O segundo motivo, é um trabalho realizado na disciplina de Fundamentos de Data Science do 2º trimestre do mestrado em 2020. Uma das atividades [disponível aqui](https://github.com/reneroliveira/Data_Science_Fundamentals/blob/master/Homeworks/cs109a_hw3/fds_hw3_RENER_OLIVEIRA.pdf) propunha uma análise exploratória, mais ajustes de regressão, nos dados da Capital BikeShare. Porém os dados foram dados de forma limpa para os alunos, e só comtemplava os anos 2011 e 2012. A escolha do "mesmo" dataset seria fazer uma releitura da parte exploratória deste outro trabalho, porém usando dados mais atuais, e respondendo perguntas diferentes.
+
+Ao buscar o dado diretamente na fonte (site da empresa), algumas variáveis que estavam disponíveis nos dados limpos do outro trabalho, não estavam lá, com isso veio a necessidade de buscar o dado de temperatura, por exemplo, em uma outra fonte externa e oficial, no caso a NOAA. 
+
+Formula-se então algumas perguntas interessantes que podem ser respondidas com a junção desses dois datasets:
+
+- Quais são os horários de pico do aluguéis?
+- Como feriados/fins de semana afetam o número de corridas?
+- Como as condições climáticas afetam as corridas?
+- Como pandemia afetou a empresa em 2020?
+
+# Extração, Limpeza e Agregação dos dados
+
+## Dados das corridas de bicicleta
+
+A Capital Bikeshare disponibiliza um arquivo zip ara cada mês em seu site, cada zip contém um csv dos registros de corridas mensais. Abaixo podemos ter uma ideia de como é o dado bruto, tomando um exemplo do mês de Janeiro de 2018.
+
+```{r}
+#Carregamento de Bibliotecas
+library(lubridate)
+library(stringr)
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(gridExtra)
+library(forcats)
+library(timeDate)
+#Carregamento do dado bruto
+bike_path <- "../data/bike/"
+example <- read.csv(paste0(bike_path,"201801_capitalbikeshare_tripdata.csv"),header=TRUE,stringsAsFactors=FALSE)
+glimpse(example)
+```
+
+Das informações acima, foi gerado um dadaset reduzido, que contem apenas 3 colunas: `date_time`, `Member`, e `Casual` que representam respectivamente a data/horário de retirada da bicicleta do seu ponto (em precisão de hora), a quantidade de Membros que retiraram bicicletas naquele horário, e a quantidade de clientes casuais. Tal classificação de clientes se refere aos diferentes plano oferecidos ela empresa, um membro é um usuário registrado com algum assinatura mensal ou anual do serviço, enquanto o usuário casual, como o nome sugere, contrata o serviço para uma pedalada única ou por um período de poucos dias.
+
+O processo de transformação citado acima foi separado em um script .R em separado, disponível no GitHub no arquivo [get_bike_data.R](https://github.com/reneroliveira/EDAV-2021.1/blob/main/BikeShare%20Project/get_bike_data.R). O motivo para tal separação, foi que neste script também está automatizado o processo de download dos dados diretamente da fonte e tal processo junto com a pipeline de transformação é computacionalmente custoso e demora a ser executado. Mas abaixo segue um esquema de como funciona o script:
+
+1. Definição do período a ser baixado (2018-2020);
+2. Loop para baixar os arquivos .zip da fonte e descompactar os .csv's;
+3. Leitura do csv bruto inicial (jan/2018);
+4. Transformação do csv inicial para o formato agregado citado acima (usando `dplyr` e `tidyr`);
+5. Loop para percorrer os outros arquivos, transformá-los e juntá-los com o inicial (usando `rbind`)
+
+Nuances como dados faltantes ou padrão de nomes de colunas diferentes foram tratadas devidamente e podem ser analisadas com mais detalhes no script. Ao final final o dado limpo é salvo em arquivos .rda e .csv, veja abaixo o cabeçalho do resultado:
+
+```{r}
+load(paste0(bike_path,"bike_data.rda"))
+head(bike_data)
+```
+
+Perceba que a coluna `date_time` está organizada em intervalos de uma hora, as outras colunas estão representando quantos usuários fizeram retiradas entre a hora marcada na linha correspondente e o segundo imediatamente anterior à hora seguinte. Temos então um dado de frequência de uso por hora, durante 3 anos (2018,2019,2020).
+
+A partir da coluna `date_time` dado podemos gerar novas colunas que serão úteis em análise futuras, como hora,dia da semana, variável indicadora de feriado, variável indicadora de estação do ano. Será adicionada também uma coluna com o total de corridas, somando membros e casuais.
+
+```{r}
+rm(example)
+# Função que transforma data lubridate  em estação do ano:
+getSeason <- function(date) {
+    year <- year(date)
+    winter <- ymd(paste0(year,"-12-21"))
+    spring <- ymd(paste0(year,"-03-20"))
+    summer <- ymd(paste0(year,"-06-20"))
+    fall <- ymd(paste0(year,"-09-22"))
+
+    ifelse (date >= winter | date < spring, "Winter",
+      ifelse (date >= spring & date < summer, "Spring",
+        ifelse (date >= summer & date < fall, "Summer", "Fall")))
+}
+
+bike_data <- bike_data %>% 
+  mutate(hour = hour(date_time),
+         weekday = weekdays(date_time),
+         season = getSeason(date_time),
+         holiday = isHoliday(timeDate(date_time),holidays=holidayNYSE(2018:2020)),
+         total = casual + member)
+head(bike_data)
+```
+
+
+## Dados de Temperatura e Agregação
+
+Para complementar os dados acima, foram coletadas informações de temperatura da cidade de Washington D.C, através do script [get_climate_data.R](https://github.com/reneroliveira/EDAV-2021.1/blob/main/BikeShare%20Project/get_climate_data.R) disponível no GitHub. A fonte como citado anteriormente é [National Oceanic and Atmospheric Administration](noaa.gov) que disponibiliza esse e vários outros dados através da biblioteca `rnoaa`. O dado bruto vem numa precisão de minutos, mas no script, além do download, é feito a agregação por hora do dia, e a medida de média dos registros disponíveis para cada hora é extraída. Segue abaixo o cabeçalho dos dados concolidados:
+
+```{r}
+load(paste0(bike_path,"../hourly_temp.rda"))
+head(hourly_temp)
+```
+
+Observa-se que estava bem frio no ano novo de 2018. Comentários à parte, agora é possível unir as duas bases usando a coluna `date_time` como chave.
+
+```{r}
+bike_data <- left_join(bike_data,hourly_temp,by="date_time")
+```
+
+Verificando dados `NA`:
+
+```{r}
+sapply(names(bike_data),function(col){return (sum(is.na(bike_data[,col])))})
+```
+Removendo dados `NA`:
+
+```{r}
+bike_data <- na.omit(bike_data)
+```
+
+Por fim, transformaremos strings em dados categóricos do tipo `Factor`, estamos considerando a hora como dado categórico, isso será esclarecido na próxima seção.
+```{r}
+bike_data <- bike_data %>%
+  mutate(hour=factor(hour,0:23),
+         weekday = factor(weekday,c("Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday")),
+         season = factor(season,c("Winter", "Spring", "Summer", "Fall")),
+         holiday = factor(holiday,c("FALSE","TRUE")))
+```
+
+Agora vejamos a "glimpse" final do dado:
+
+```{r}
+glimpse(bike_data)
+```
+
+Salvando o dado limpo para arquivamento:
+
+```{r}
+save(bike_data,file=paste0(bike_path,"bike_data_cleaned.rda"))
+save(bike_data,file=paste0(bike_path,"bike_data_cleaned.csv"))
+```
+
+
+# Análise Exploratória
+
+## Visualizações iniciais
+Começaremos a análise com algumas medidas de resumo das variáveis quantitativas `casual`, `member`, `total` e `temperature`:
+
+```{r}
+load(paste0(bike_path,"bike_data_cleaned.rda"))
+bike_data %>% select(casual,member,total,temperature) %>% summary()
+```
+```{r,echo=FALSE}
+#Comando para centralizar títulos e subtítulos
+theme_update(plot.title = element_text(hjust = 0.5)) 
+theme_update(plot.subtitle = element_text(hjust = 0.5)) 
+```
+
+Seguem os boxplots, para melhor visualização das medidas acima:
+
+```{r}
+p1 <- ggplot(bike_data) + geom_boxplot(aes(y=casual))
+p2 <- ggplot(bike_data) + geom_boxplot(aes(y=member))
+p3 <- ggplot(bike_data) + geom_boxplot(aes(y=total))
+p4 <- ggplot(bike_data) + geom_boxplot(aes(y=temperature))
+grid.arrange(p1, p2, p3,p4, nrow = 1)
+```
+
+Como podemos ver em `casual`, `member` e `total`, as distribuições de números de corridas por hora são bastante assimétricas. Isso provavemente se explica pela ciclicidade do aluguéis em horários maior e menor pico de uso. A temperatura segue uma distribuição melhor comportata, porém podemos ter uma ideia mais completa, subdividindo o plot pelas estações dos anos:
+
+```{r}
+# bike_data$season <- factor(bike_data$season,)
+ggplot(bike_data) + geom_boxplot(aes(x=season,y=temperature)) 
+```
+
+Como esperado, o inverno é o período mais frio de Washington, chegando a alcançar temperaturas negativas, enquanto no verão a distribuição fica mais concentrada em temperaturas mais altas.
+
+
+## Analisando assimetrias e dispersões
+
+Vamos explorar um pouco mais a assimetria das colunas que contam os aluguéis, analisando a `total` como uma proxy das outras duas.
+
+```{r}
+med <- median(bike_data$total)
+bike_data %>% 
+  mutate(u=sort(med-total),
+         v=sort(total-med)) %>% 
+  ggplot() + aes(u,v) + geom_point() + 
+  geom_abline(intercept = 0, slope = 1, color="red") + 
+  xlim(0,300)+ylim(0,1600)+
+  labs(title="Gráfico de Dispersão - aluguéis por hora")
+```
+
+Como podemos ver, temos uma distrubuição estremamete assimétrica para cima, ou seja, os valores `v` que representam a diferença `mediana`-`total` são muito maiores do que os valores de `u` que representam a distància inversa à mediana, e note que tal discrepância ocorre com intensidade somente em valores altos de u e v. Isso mostra que há valores muito acima da mediana que estão causando tais assimetrias. O que pode ser explicado pela variação de horários de picos como veremos mais adiante. 
+
+Um plot auxiliar é o gráfico qxq comparando quantis dos membros e usuários casuais:
+
+```{r}
+q_member=quantile(bike_data$member,probs = seq(0,1,1/200))
+q_casual=quantile(bike_data$casual,probs = seq(0,1,1/200))
+  ggplot() + aes(q_member,q_casual) + geom_point() + 
+  geom_abline(intercept = 0, slope = 1, color="red") + 
+    labs(title = "Gráfico de Quantis - Membros x Casuais")+
+    xlab("Quantis - Membros") + ylab("Quantis - Casuais")
+  # labs(title="Gráfio de dispersão - aluguéis por dia (mediana)")
+```
+O gráfico acima nos dá uma evidência de que os membros são mais ativos do que os usuários casuais, pois os pontos estão majoritariamente abaixo da reta identidade, indicando que dado um quantil-p dos membros, o quantil-p correspondente dos casuais é menor.
+
+Retornando à ideia da dispersão e assimetria das corridas, podemos responder a primeira pergunta formulada no início deste texto, que diz respeito aos horários de pico dos aluguéis de bicicletas. Os gráficos abaixo mostram um padrão interessante:
+
+```{r}
+ggplot(bike_data) + 
+  geom_point(aes(x=hour,y=casual,color="steelblue"))+
+  geom_point(aes(x=as.numeric(hour)-0.35,y=member,color="orange"))+
+  scale_color_identity(name = "Tipo",
+                          breaks = c("steelblue", "orange"),
+                          labels = c("Casual", "Membro"),
+                          guide = "legend")+
+  labs(x="hora",y="contagem")
+```
+
+Podemos ver em ambos os gráficos um baixo uso entre meia-noite e 6 da manhã, e no gráfico dos Membros temos um pico entre 7h e 8h da manhã e um segundo pico entre 17h e 18h. Já no gráfico dos casuais, o uso cresce de forma mais suave durante o dia até seu máximo próximo às 15h e começa a decrescer devagar até à noite.
+
+Tal comportamento do gráfico pode estar relacionado ao fato de que membros registrados tender a assinar o serviço pois farão uso diário para ir e voltar do trabalho/escola por exemplo, o que levaria os picos nos horários observados. Quanto ao gráfico dos casuais, não temos muitas surpresas, essa suavidade, com uso baixo à noite e madrugada e mais intenso ao dia era o esperado de um serviço desse tipo.
+
+Podemos calcular o grau de associação $R^2$ das variáveis `hour` contra `casual` e `member`, seguindo os códigos de referência do monitor [Tiago Silva](https://gist.github.com/tiagodsilva/537e92a5269f85123d5a84b598311454).
+
+```{r}
+totalvar <- var(bike_data$casual)
+registers <- table(bike_data$hour)
+vars_casual <- summarise(group_by(bike_data, hour), 
+                 var = var(casual))[["var"]] 
+varbar_casual <- sum((vars_casual * registers))/sum(registers) 
+r2_casual <- 1 - (varbar_casual)/totalvar  
+
+totalvar <- var(bike_data$member)
+vars_member <- summarise(group_by(bike_data, hour), 
+                 var = var(member))[["var"]] 
+varbar_member <- sum((vars_member * registers))/sum(registers) 
+r2_member <- 1 - (varbar_member)/totalvar  
+r2_casual;r2_member
+
+```
+
+O primeiro número é o $R^2$ dos causuais e o segundo, dos membros; Como se observa, o $R^2$ dos membros é maior. Essa medida indica que a introdução da variável categórica `hour` faz com que a variância intraclasse se difira mais da variância total, quando mais próximo de 1, maior a intensidade dessa diferença, e quando mais próximo de zero, a dispersão não varia muito entre as classe. Nos dois casos os números estão suficientemente longe de zero, mas o fato da medida dos membros ser maior evidencia o fato que vimos graficamente sobre as dispersões nos horários de pico de início e fim de expediente.
+
+Um outra evidência de tal fato, segue da reprodução dos mesmos gráficos, porém divididos em feriados e dias úteis. A coluna `holiday` é `TRUE` para fins de semana e feriados, e `FALSE`para dias úteis.
+
+```{r}
+g1 <- bike_data %>% filter(holiday==FALSE) %>% 
+ggplot() + 
+  geom_point(aes(x=hour,y=casual,color="steelblue"))+
+  geom_point(aes(x=as.numeric(hour)-0.35,y=member,color="orange"))+
+  scale_color_identity(name = "Tipo",
+                          breaks = c("steelblue", "orange"),
+                          labels = c("Casual", "Membro"),
+                          guide = "legend")+
+  ylim(0,1600)+
+  labs(title="Dias úteis",x="hora",y="contagem")
+g2 <- bike_data %>% filter(holiday==TRUE) %>% 
+ggplot() + 
+  geom_point(aes(x=hour,y=casual,color="steelblue"))+
+  geom_point(aes(x=as.numeric(hour)-0.35,y=member,color="orange"))+
+  scale_color_identity(name = "Tipo",
+                          breaks = c("steelblue", "orange"),
+                          labels = c("Casual", "Membro"),
+                          guide = "legend")+
+  ylim(0,1600)+
+  labs(title="Fins de Semanas e Feriados",x="hora",y="contagem")
+grid.arrange(g1,g2)
+```
+
+Percebemos que nos fins de semana, o pico dos membros obsevado anteriormente deixa de existir, e há um aumento de forma geral na contagem de corridas durante à tarde, o que poderia ser explicado por usuários que usam o serviço para o lazer aos feriados e fins de semana.
+
+Um comparativo de duas variáveis categórias que complementa a discussão acima seria a tabela de contingência entre `hour` e `holiday`, usando a soma de `total` como conteúdo e resumo dos dados.
+
+```{r}
+hour_holiday <- bike_data %>% group_by(hour,holiday) %>%
+  summarise(total_sum=sum(total))  %>%
+  spread(key=holiday,value=total_sum)
+hour_holiday
+```
+
+Com a tabela podemos realizar o teste chi-quadrado, avaliando a medida $\chi^2$, que sob a hipótese de independência entre feriados e corridas por hora, seria próximo de zero.
+
+```{r}
+#Referência: https://gist.github.com/tiagodsilva/537e92a5269f85123d5a84b598311454
+m <- hour_holiday[,2:3]
+rs <- rowSums(m)
+cs <- colSums(m)
+em <- matrix(nrow = 24, ncol = 2) # valores esperados 
+for(j in 1:2) em[, j] <- (cs[j]*rs)/sum(cs)
+chiSquared = sum((m - em)^2/em) 
+chiSquared
+```
+
+Utilizando a função pronta do pacote `stats` podemos analisar o p-valor da estatística acima, mas de antemão, vemos que é um número bem distante de zero, nos dando fortes indícios de que a distribuição por hora é dependente da variável de feriado.
+
+```{r}
+chisq.test(m)
+```
+
+Com um p-valor de $2,2\times 10^{-16}$ temos evidência estatística para rejeitar a hipótese de independência das variáveis `hour` e `holiday` ambas categóricas neste contexto.
+
+## Influência do clima
+
+Para responder a pergunta "Como as condições climáticas afetam as corridas?" podemos fazer um gráfico de dispersão e analisar a correlação entre as variáveis `temperature` e `total`, mas antes vamos fazer uma simplificação do dado, agrupando por dia e resumindo o total de corridas pela soma, e a temperatura pela média, isso para reduzirmos o ruído intradiário que foi analisado anteriormente, e considerarmos tendências de mais longo prazo.
+
+
+```{r}
+bike_data_by_day <- bike_data %>% 
+  mutate(day=date(date_time)) %>% 
+  group_by(day) %>% 
+  summarise(temperature=mean(temperature),
+            total=sum(total),
+            season=first(season),
+            member=sum(member),
+            casual=sum(casual)) 
+ggplot(bike_data_by_day)+
+  aes(y=total,x=temperature)+
+  geom_point(color="darkgreen")+
+  geom_smooth(method=lm)+
+  labs(title="Temperatura vs. Aluguéis/dia",
+       x="Temperatura",
+       y="Total de Aluguéis por dia")
+```
+
+Podemos ver que há uma relação entre temperaturas mais altas e mais corridas, assim como em temperaturas mais baixas, menos corridas. Não é uma relação perfeitamente linear, porém é bem claro que tal relação existe. A baixas temperaturas de Washington são muito rigorosas e podem estar acompanhadas de tempestades de neve, neblina ou eventos relacionados, que levaria ao uso do serviço apenas em situações de real necessidade. Já em temperaturas normais, ou mais quentes, as pessoas tenderiam a alugar mais bicicletas para o lazer ao ar livre, o que explicaria a tendência observada no gráfico.
+
+Estatisticamente, podemos evidenciar tal fato analisando o coeficiente angular da reta de regressão linear, e sua significância estatística. Abaixo vemos que tal coeficiente é positivo (indicando que quanto maior a temperatura maior o número de viagens) e estatisticamente significante com p-valor na casa de $10^{-16}$.
+
+```{r}
+linear_model <- lm(total~temperature,bike_data_by_day)
+summary(linear_model)
+```
+
+## Impactos da Pandemia
+
+No mês de Março de 2020 os primeiros casos de Covid-19 começaram a circular em Washington D.C e no mesmo mês, foram impostas medidas de restrição de circulação como forma de controlar o espalhamento da doença; Desde então os Estados Unidos e o mundo como um todo vêm trabalhando em maior ou menor grau com tais medidas restritivas, a circulação, no momento que escrevo este texto, contínua restrita no mundo todo, à espera do avanço das campanhas de vacinação da população. 
+**Como pandemia afetou a empresa em 2020?** essa é uma pergunta que será respondida em alguns passos, primeiro um boxplot clássico com a dispersão em cada ano disponível no dado (2018,2019,2020)
+
+```{r}
+bike_data_by_day <- bike_data_by_day %>% 
+  mutate(year=factor(year(day),c(2018,2019,2020))) 
+
+g1 <- ggplot(bike_data_by_day) + aes(x=year,y=total) + geom_boxplot() + 
+  labs(title = "Aluguéis por ano (Total)",
+       x = "Ano", y ="Total de Aluguéis")
+g2 <- ggplot(bike_data_by_day) + aes(x=year,y=member) + 
+  geom_boxplot(fill="orange") + 
+  labs(title = "Aluguéis por ano (Membros)",
+       x = "Ano", y ="Membros")
+g3 <- ggplot(bike_data_by_day) + aes(x=year,y=casual) + 
+  geom_boxplot(fill="steelblue") + 
+  labs(title = "Aluguéis por ano (Casuais)",
+       x = "Ano", y ="Casuais")
+grid.arrange(g2,g3,g1,nrow=2)
+```
+
+Como podemos ver, de fato houve um impacto negativo no número total de corridas pelo terceiro boxplot, porém tal impacto parece ter sido causado pelos usuário membros, na qual a queda foi mais brusca do que nos casuais, que inclusive, aumentaram a frequência de corridas em relação ao ano de 2019.
+
+Abaixo temos outros plots complementares que evidenciam isso, note que fizemos a segregação das estações do ano pelas cores, pois tal variável afeta o número de aluguéis que se comporta de forma sazional em relação à esta variável. 
+
+```{r}
+#filter(day>="2019-12-01" & day<="2020-07-01") %>%
+g1 <- bike_data_by_day %>%  
+ggplot()+aes(x=day,y=member,colour=season)+geom_point() + 
+  labs(title = "Member",x="Date")
+
+g2<- bike_data_by_day %>%  
+ggplot()+aes(x=day,y=casual,colour=season)+geom_point() + 
+  labs(title = "Casual",x="Date") 
+
+grid.arrange(g1,g2)
+```
+
+As medidas restritivas foram decretadas na transição entre o inverno (hemisfério norte) e primavera de 2020. Vemos acima que as corridas dos membros por volta desse ponto caíram de forma mas acentuada. Uma possível explicação é que os membros registrados eram pessoas que usavam o serviço para se deslocar para o trabalho/escola, que deixaram de necessitar do serviço por conta da suspensão de atividades laborais/educacionais presenciais. 
+
+A subida dos usuários casuais tem algumas explicações plausíveis. A primeira é que trabalhadores essenciais, de serviços de saúde, alimentação, varejo essencial e indústria, continuaram trabalhando e possivelmente adotaram bicicletas como meio de descolamento como alternativa à ônibus, trens e metrôs que envolviam maiores aglomerações.
+
+A Capital BikeShare, como divulgado em seu [blog](https://www.capitalbikeshare.com/blog/covid19) também fez um movimento que possa ter ajudado nesse aumento de usuários causuais durante a pandemia. No dia 8 de Março de 2020 foi feita a publicação citada, anunciando medidas a serem tomadas pela empresa em relação à pandemia. 
+
+Além do desinfetamento das bicicletas no local de chegada, adoção do uso de máscaras e luvas pelos funcionários que lidam diretamente com as bikes, foi lançada uma promoção para trabalhadores essenciais, oferecendo gratuitamente até 31 de Julho de 2020, corridas grátis e ilimitadas do tipo `Single Trip` que são categorisadas como casuais nos dados. Além disso, ofereceram descontos em corridas `Single Trip` para usuários que necessitassem de fazer algum deslocamento essencial. Tais ações, provavelmente inflaram o número de corridas causuais como vemos nos gráficos acima, mas certamente, é uma forma de deslocamento muito mas segura do que um transporte público, se todas as medidas de higiene forem tomadas.
+
+# Comentários finais e Conclusões
+
+O processo de obtenção dos dados apesar de trabalhoso, valeu muito à pena, pelas análises finais que conseguimos realizar. No início do texto formulamos as seguintes perguntas:
+
+- Quais são os horários de pico do aluguéis?
+- Como feriados/fins de semana afetam o número de corridas?
+- Como as condições climáticas afetam as corridas?
+- Como pandemia afetou a empresa em 2020?
+
+Como já pontuamos ao longo desde texto, conseguimos responder todas elas usando medidas estatísticas e visualizações adequadas. Sobre os horários de pico, identificamos que nos momentos de início e fim de expediente as corridas de membros eram recordes, enquanto as corridas casuais eram distribuidas mais suavemente durante o dia, comseu pico à tarde.
+
+A dinâmica dos finais de semana e feriados remove os picos dos usuários membros e faz com que a distribuição seja mais suave, enquanto as corridas casuais aumentam, indicando possívelmente mais pessoas usando o serviço para lazer.
+
+Além disso identificamos uma correlação positiva entre temperatura e total de aluguéis, indicando que temperaturas mais altas favorecem o uso do serviço. Por fim, foram feitas visualizações do impacto da pamdemia da COVID-19 na empresa, vimos que apesar de usuários membros reduzirem seu uso, as medidas de incentivo ao uso de bicicleta para trabalhadores essenciais, aumentaram as corridas casuais, o que provavelmente teve um impacto positivo na redução de aglomerações em transportes públicos.
+
+A bibliotecas úteis estão referenciadas, mas sem dúvida as mais importantes foram o `tidyverse` (e seus subpacotes), e a `rnoaa` para a obtenção dos dados de temperatura. O processo não foi explícito neste texto, mas como citado anteriormente, está em um script em separado, por questões de performance e organização.
+
+
+# Referências
